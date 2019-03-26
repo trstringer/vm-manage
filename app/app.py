@@ -1,6 +1,6 @@
 """Management VM web app"""
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, abort
 
 # pylint: disable=invalid-name
 app = Flask(__name__)
@@ -11,14 +11,17 @@ def default_route():
 
     return jsonify(dict(application='vm-manage'))
 
-@app.route('/vm', methods=['POST'])
-def create_vm():
+@app.route('/vm/<size>', methods=['POST'])
+def create_vm(size: str):
     """Create a VM"""
 
-    return 'Creating a VM!'
+    if size not in ['small', 'medium', 'large']:
+        abort(400, f'Size {size} does not exist')
+
+    return 'Creating VM!'
 
 @app.route('/vm/')
-@app.route('/vm/<vm_id>')
+@app.route('/vm/<int:vm_id>')
 def get_vm(vm_id: int = None):
     """List all VMs or a single one"""
 
@@ -27,7 +30,7 @@ def get_vm(vm_id: int = None):
 
     return f'Getting VM {vm_id}!'
 
-@app.route('/vm/<vm_id>/boot')
+@app.route('/vm/<int:vm_id>/boot')
 def get_vm_boot(vm_id: int):
     """Get VM boot events"""
 
