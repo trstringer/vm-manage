@@ -1,6 +1,7 @@
 """Management VM web app"""
 
 from flask import Flask, jsonify, abort
+from .virtual_machine import VirtualMachine, VirtualMachineSize
 
 # pylint: disable=invalid-name
 app = Flask(__name__)
@@ -8,6 +9,8 @@ app = Flask(__name__)
 @app.route('/')
 def default_route():
     """Default root route"""
+
+    vm = VirtualMachine(1, 'hi', VirtualMachineSize.MEDIUM)
 
     return jsonify(dict(application='vm-manage'))
 
