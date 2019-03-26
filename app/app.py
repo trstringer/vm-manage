@@ -2,9 +2,10 @@
 
 from flask import Flask, jsonify
 
-APP = Flask(__name__)
+# pylint: disable=invalid-name
+app = Flask(__name__)
 
-@APP.route('/')
+@app.route('/')
 def default_route():
     """Default root route"""
 
