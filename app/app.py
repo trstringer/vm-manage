@@ -26,3 +26,9 @@ def get_vm(vm_id: int = None):
         return 'Get all VMs!'
 
     return f'Getting VM {vm_id}!'
+
+@app.route('/vm/<vm_id>/boot')
+def get_vm_boot(vm_id: int):
+    """Get VM boot events"""
+
+    return f'Getting boot events for VM {vm_id}!'
