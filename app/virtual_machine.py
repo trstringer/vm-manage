@@ -7,6 +7,7 @@ from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.resource import ResourceManagementClient
+import psycopg2
 
 class VirtualMachineSize(Enum):
     """Virtual machine size enum"""
@@ -180,3 +181,45 @@ def get_virtual_machine(vm_id: int) -> VirtualMachine:
     """
 
     pass
+
+def _insert_virtual_machine(name: str, size: VirtualMachineSize) -> None:
+    """
+    Insert the virtual machine into the database after it is created.
+
+    Args:
+        name (str): Name of the new VM.
+        size (VirtualMachineSize): Size of the new VM.
+
+    Returns:
+        None
+    """
+
+    db_name = os.environ['POSTGRES_DB_NAME']
+    username = os.environ['POSTGRES_USER_NAME']
+    hostname = os.environ['POSTGRES_HOST_NAME']
+    password = os.environ['POSTGRES_PASSWORD']
+    port = os.environ['POSTGRES_PORT']
+
+    # pylint: disable=line-too-long
+    db_connection = psycopg2.connect(f"dbname='{db_name}' user='{username}' host='{hostname}' password='{password}' port='{port}'")
+    cursor = db_connection.cursor()
+
+    query = '''
+        INSERT INTO public.virtual_machine
+        (
+            name,
+            size
+        )
+        VALUES
+        (
+            %s,
+            %s
+        )
+    '''
+    params = (name, size.name)
+
+    cursor.execute(query, params)
+    db_connection.commit()
+
+    cursor.close()
+    db_connection.close()
