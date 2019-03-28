@@ -2,3 +2,5 @@ venv/
 .git
 integration/
 *.sh
+cloud.env
+cloud.sample.env

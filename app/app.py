@@ -1,7 +1,7 @@
 """Management VM web app"""
 
 from flask import Flask, jsonify, abort
-from .virtual_machine import VirtualMachine, VirtualMachineSize
+from .virtual_machine import create_virtual_machine, VirtualMachineSize
 
 # pylint: disable=invalid-name
 app = Flask(__name__)
@@ -10,16 +10,19 @@ app = Flask(__name__)
 def default_route():
     """Default root route"""
 
-    vm = VirtualMachine(1, 'hi', VirtualMachineSize.MEDIUM)
-
     return jsonify(dict(application='vm-manage'))
 
-@app.route('/vm/<size>', methods=['POST'])
-def create_vm(size: str):
+@app.route('/vm/<name>/<size>', methods=['POST'])
+def create_vm(name: str, size: str):
     """Create a VM"""
 
     if size not in ['small', 'medium', 'large']:
         abort(400, f'Size {size} does not exist')
+
+    create_virtual_machine(
+        name=name,
+        size=VirtualMachineSize.SMALL
+    )
 
     return 'Creating VM!'
 
