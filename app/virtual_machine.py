@@ -41,6 +41,9 @@ def create_virtual_machine(name: str, size: VirtualMachineSize) -> VirtualMachin
         VirtualMachine: Instance of the created VM.
     """
 
+    _insert_virtual_machine(name=name, size=size)
+    return
+
     application_id = os.environ['AZURE_CLIENT_ID']
     client_secret = os.environ['AZURE_CLIENT_SECRET']
     tenant_id = os.environ['AZURE_TENANT_ID']
