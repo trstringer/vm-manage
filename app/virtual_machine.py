@@ -16,6 +16,7 @@ class VirtualMachineSize(Enum):
     MEDIUM = auto()
     LARGE = auto()
 
+# pylint: disable=too-few-public-methods
 class VirtualMachine:
     """Virtual machine object"""
 
@@ -27,6 +28,8 @@ class VirtualMachine:
         self.size = size
 
     def events(self) -> List[Dict[str, Any]]:
+        """List all events for this virtual machine"""
+
         pass
 
 def create_virtual_machine(name: str, size: VirtualMachineSize) -> VirtualMachine:
