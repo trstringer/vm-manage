@@ -41,9 +41,6 @@ def create_virtual_machine(name: str, size: VirtualMachineSize) -> VirtualMachin
         VirtualMachine: Instance of the created VM.
     """
 
-    _insert_virtual_machine(name=name, size=size)
-    return
-
     application_id = os.environ['AZURE_CLIENT_ID']
     client_secret = os.environ['AZURE_CLIENT_SECRET']
     tenant_id = os.environ['AZURE_TENANT_ID']
@@ -159,6 +156,8 @@ def create_virtual_machine(name: str, size: VirtualMachineSize) -> VirtualMachin
         parameters=vm_params
     )
 
+    _insert_virtual_machine(name=name, size=size)
+
 def list_virtual_machines() -> List[VirtualMachine]:
     """
     List all VMs.
@@ -170,9 +169,42 @@ def list_virtual_machines() -> List[VirtualMachine]:
         List[VirtualMachine]: Environment virtual machines.
     """
 
-    pass
+    db_name = os.environ['POSTGRES_DB_NAME']
+    username = os.environ['POSTGRES_USER_NAME']
+    hostname = os.environ['POSTGRES_HOST_NAME']
+    password = os.environ['POSTGRES_PASSWORD']
+    port = os.environ['POSTGRES_PORT']
 
-def get_virtual_machine(vm_id: int) -> VirtualMachine:
+    # pylint: disable=line-too-long
+    db_connection = psycopg2.connect(f"dbname='{db_name}' user='{username}' host='{hostname}' password='{password}' port='{port}'")
+    cursor = db_connection.cursor()
+
+    query = '''
+        SELECT
+            vm_id,
+            name,
+            size
+        FROM public.virtual_machine;
+    '''
+
+    cursor.execute(query)
+    output = cursor.fetchall()
+    db_connection.commit()
+
+    cursor.close()
+    db_connection.close()
+
+    return [
+        VirtualMachine(
+            vm_id=row[0],
+            name=row[1],
+            size=VirtualMachineSize[row[2]]
+        )
+        for row
+        in output
+    ]
+
+def get_virtual_machine(name: str) -> VirtualMachine:
     """
     Get a virtual machine instance.
 
@@ -183,7 +215,39 @@ def get_virtual_machine(vm_id: int) -> VirtualMachine:
         VirtualMachine: Requested virtual machine.
     """
 
-    pass
+    db_name = os.environ['POSTGRES_DB_NAME']
+    username = os.environ['POSTGRES_USER_NAME']
+    hostname = os.environ['POSTGRES_HOST_NAME']
+    password = os.environ['POSTGRES_PASSWORD']
+    port = os.environ['POSTGRES_PORT']
+
+    # pylint: disable=line-too-long
+    db_connection = psycopg2.connect(f"dbname='{db_name}' user='{username}' host='{hostname}' password='{password}' port='{port}'")
+    cursor = db_connection.cursor()
+
+    query = '''
+        SELECT
+            vm_id,
+            name,
+            size
+        FROM public.virtual_machine
+        WHERE name = %s;
+    '''
+    params = (name,)
+
+    cursor.execute(query, params)
+    output = cursor.fetchone()
+    print(output)
+    db_connection.commit()
+
+    cursor.close()
+    db_connection.close()
+
+    return VirtualMachine(
+        vm_id=output[0],
+        name=output[1],
+        size=VirtualMachineSize[output[2]]
+    ) if output else None
 
 def _insert_virtual_machine(name: str, size: VirtualMachineSize) -> None:
     """
