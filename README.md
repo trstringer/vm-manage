@@ -4,6 +4,7 @@
 
 * [Description](#description)
 * [Azure components used in development](#azure-components-used-in-development)
+* [Design diagram](#design-diagram)
 * [Design decisions](#design-decisions)
     * [Web API](#web-api)
     * [Persistent data storage](#persistent-data-storage)
@@ -15,7 +16,7 @@
 
 Create a Linux Virtual Machine in Azure and retrieve systemd journal logs with a RESTful web API.
 
-The web API is used to provision a Virtual Machine (and accompanying resource group, network stack, and custom script extension). The API will record the created VM, and the custom script exctension will stream systemd journal entries from the provisioned VM back to the web API. The end user will only have to initiate HTTP requests to the web service to retrieve these systemd boot events, optionally filtering by unit.
+The web API is used to provision a Virtual Machine (and accompanying resource group, network stack, and custom script extension). The API will record the created VM, and the custom script extension will stream systemd journal entries from the provisioned VM back to the web API. The end user will only have to initiate HTTP requests to the web service to retrieve these systemd boot events, optionally filtering by unit.
 
 ## Azure components used in development
 
