@@ -1,5 +1,16 @@
 # Azure Virtual Machine Creator and systemd Logging
 
+### Index
+
+* [Description](#description)
+* [Azure components used in development](#azure-components-used-in-development)
+* [Design decisions](#design-decisions)
+    * [Web API](#web-api)
+    * [Persistent data storage](#persistent-data-storage)
+    * [Provisioned VMs](#provisioned-vms)
+    * [Container-based architecture](#container-based-architecture)
+* [API reference](#api-reference)
+
 ### Description
 
 Create a Linux Virtual Machine in Azure and retrieve systemd journal logs with a RESTful web API.
