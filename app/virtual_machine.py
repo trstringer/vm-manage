@@ -1,6 +1,5 @@
 """Virtual machine handler module"""
 
-from datetime import datetime
 from enum import Enum, auto
 import os
 from typing import List, Dict, Any
@@ -27,10 +26,49 @@ class VirtualMachine:
         self.name = name
         self.size = size
 
-    def events(self) -> List[Dict[str, Any]]:
+    def events(self, unit: str = None) -> List[Dict[str, Any]]:
         """List all events for this virtual machine"""
 
-        pass
+        db_name = os.environ['POSTGRES_DB_NAME']
+        username = os.environ['POSTGRES_USER_NAME']
+        hostname = os.environ['POSTGRES_HOST_NAME']
+        password = os.environ['POSTGRES_PASSWORD']
+        port = os.environ['POSTGRES_PORT']
+
+        # pylint: disable=line-too-long
+        db_connection = psycopg2.connect(f"dbname='{db_name}' user='{username}' host='{hostname}' password='{password}' port='{port}'")
+        cursor = db_connection.cursor()
+
+        query = '''
+            SELECT
+                vme.log_datetime,
+                vme.unit,
+                vme.message
+            FROM public.virtual_machine_event AS vme
+            INNER JOIN public.virtual_machine AS vm
+            ON vme.vm_id = vm.vm_id
+            WHERE
+                vm.name = %(name)s;
+        '''
+        params = dict(name=self.name)
+
+        cursor.execute(query, params)
+        output = cursor.fetchall()
+        db_connection.commit()
+
+        cursor.close()
+        db_connection.close()
+
+        return [
+            dict(
+                log_datetime=row[0],
+                unit=row[1],
+                message=row[2]
+            )
+            for row
+            in output
+            if not unit or row[1] == unit
+        ]
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert the VirtualMachine object to a dict"""

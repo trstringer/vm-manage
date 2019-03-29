@@ -39,6 +39,8 @@ def create_vm(name: str, size: str):
         size=VirtualMachineSize.SMALL
     )
 
+    return Response(status=200)
+
 @app.route('/vm/')
 @app.route('/vm/<name>')
 def get_vm(name: str = None):
@@ -53,11 +55,17 @@ def get_vm(name: str = None):
 
     return jsonify(get_virtual_machine(name=name).to_dict())
 
-@app.route('/vm/<name>/boot')
-def get_vm_boot(name: str):
+@app.route('/vm/<name>/boot/')
+@app.route('/vm/<name>/boot/<unit>')
+def get_vm_boot(name: str, unit: str = None):
     """Get VM boot events"""
 
-    return f'Getting boot events for VM {name}!'
+    vm = get_virtual_machine(name=name)
+
+    if not vm:
+        return Response(status=400)
+
+    return jsonify(vm.events(unit=unit))
 
 @app.route('/vm/<name>/boot', methods=['POST'])
 def add_vm_boot_event(name: str):
