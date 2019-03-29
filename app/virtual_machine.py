@@ -180,7 +180,8 @@ def create_virtual_machine(name: str, size: VirtualMachineSize) -> VirtualMachin
             type_handler_version='2.0',
             settings=dict(
                 skipDos2Unix=True,
-                commandToExecute='while true; do date >> /tmp/hello.txt; sleep 5; done'
+                # pylint: disable=line-too-long
+                commandToExecute=f'journalctl -b 0 -o json --output-fields "UNIT,MESSAGE" --no-pager | grep UNIT | grep MESSAGE | while read line; do curl -L -X POST -d "$line" "https://vm-manage-app.azurewebsites.net/vm/{name}/boot"; done && while true; do sleep 5; journalctl -b 0 -o json --since -5s --output-fields "UNIT,MESSAGE" --no-pager | grep UNIT | grep MESSAGE | while read line; do curl -L -X POST -d "$line" "https://vm-manage-app.azurewebsites.net/vm/{name}/boot"; done; done'
             )
         )
     )
