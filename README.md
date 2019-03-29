@@ -24,6 +24,10 @@ The web API is used to provision a Virtual Machine (and accompanying resource gr
 * Azure Database for PostgreSQL
 * Azure Linux VM (target provisioned machines)
 
+## Design diagram
+
+![design diagram](design_diagram.png)
+
 ## Design decisions
 
 ### Web API
