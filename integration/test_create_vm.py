@@ -1,4 +1,4 @@
-"""Test the default route"""
+"""Test VM creation"""
 
 import sys
 import requests
@@ -8,8 +8,8 @@ ROOT_URL = 'http://localhost:8000'
 def run_tests():
     """Main code execution"""
 
-    res = requests.get(f'{ROOT_URL}')
-    assert res.status_code == 200, 'Default route should succeed'
+    res = requests.post(f'{ROOT_URL}/vm/test/small')
+    assert res.status_code == 200, 'VM creation should work'
 
 try:
     run_tests()
