@@ -1,6 +1,6 @@
 """Management VM web app"""
 
-from flask import Flask, jsonify, abort, request
+from flask import Flask, jsonify, abort, request, Response
 from .virtual_machine import (
     create_virtual_machine,
     list_virtual_machines,
@@ -63,11 +63,13 @@ def get_vm_boot(name: str):
 def add_vm_boot_event(name: str):
     """Add a boot event for the specified VM"""
 
-    event_data = request.get_json(force=True)
+    event_data = request.get_json(force=True, silent=True)
 
-    if 'UNIT' in event_data and 'MESSAGE' in event_data:
+    if event_data and 'UNIT' in event_data and 'MESSAGE' in event_data:
         _insert_virtual_machine_boot_event(
             name=name,
             unit=event_data['UNIT'],
             message=event_data['MESSAGE']
         )
+
+    return Response(status=200)
