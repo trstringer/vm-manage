@@ -305,7 +305,6 @@ def get_virtual_machine(name: str) -> VirtualMachine:
 
     cursor.execute(query, params)
     output = cursor.fetchone()
-    print(output)
     db_connection.commit()
 
     cursor.close()
