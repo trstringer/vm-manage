@@ -49,10 +49,10 @@ From the start of development, a container was used for the Flask web API. This 
 
 ## API reference
 
-* `[HTTP/GET] /` - Default route displaying the application name
-* `[HTTP/POST] /vm/<name>/<size>` - Create a virtual machine with `name` and `size` (options are `small`, `medium`, and `large`)
-* `[HTTP/GET] /vm` - List all provisioned virtual machines
-* `[HTTP/GET] /vm/<name>` - Get a virtual machine and specs
-* `[HTTP/GET] /vm/<name>/boot` - Get all systemd events for the VM `name`
-* `[HTTP/GET] /vm/<name>/boot/<unit>` - Get systemd events for VM `name` for a particular `unit`
-* `[HTTP/POST] /vm/<name>/boot` - Add a systemd event to the API (**Note: this is reserved for provisioned VM usage**)
+* `[GET] /` - Default route displaying the application name
+* `[POST] /vm/<name>/<size>` - Create a virtual machine with `name` and `size` (options are `small`, `medium`, and `large`)
+* `[GET] /vm` - List all provisioned virtual machines
+* `[GET] /vm/<name>` - Get a virtual machine and specs
+* `[GET] /vm/<name>/boot` - Get all systemd events for the VM `name`
+* `[GET] /vm/<name>/boot/<unit>` - Get systemd events for VM `name` for a particular `unit`
+* `[POST] /vm/<name>/boot` - Add a systemd event to the API (**Note: this is reserved for provisioned VM usage**)
