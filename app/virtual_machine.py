@@ -289,9 +289,9 @@ def get_virtual_machine(name: str) -> VirtualMachine:
             name,
             size
         FROM public.virtual_machine
-        WHERE name = %s;
+        WHERE name = %(name)s;
     '''
-    params = (name,)
+    params = dict(name=name)
 
     cursor.execute(query, params)
     output = cursor.fetchone()
@@ -329,11 +329,11 @@ def _insert_virtual_machine(name: str, size: VirtualMachineSize) -> None:
         )
         VALUES
         (
-            %s,
-            %s
+            %(name)s,
+            %(size)s
         )
     '''
-    params = (name, size.name)
+    params = dict(name=name, size=size.name)
 
     cursor.execute(query, params)
     db_connection.commit()
