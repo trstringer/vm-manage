@@ -19,12 +19,6 @@ def default_route():
 
     return jsonify(dict(application='vm-manage'))
 
-@app.route('/testscript/<message>', methods=['POST'])
-def test_script(message: str):
-    """Test the script extension"""
-
-    _insert_virtual_machine(name=f'test_{message}', size=VirtualMachineSize.MEDIUM)
-
 @app.route('/vm/<name>/<size>', methods=['POST'])
 def create_vm(name: str, size: str):
     """Create a VM"""
