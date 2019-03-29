@@ -1,5 +1,6 @@
 """Virtual machine handler module"""
 
+from datetime import datetime
 from enum import Enum, auto
 import os
 from typing import List, Dict, Any
@@ -16,7 +17,6 @@ class VirtualMachineSize(Enum):
     MEDIUM = auto()
     LARGE = auto()
 
-# pylint: disable=too-few-public-methods
 class VirtualMachine:
     """Virtual machine object"""
 
@@ -31,6 +31,15 @@ class VirtualMachine:
         """List all events for this virtual machine"""
 
         pass
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert the VirtualMachine object to a dict"""
+
+        return dict(
+            vm_id=self.vm_id,
+            name=self.name,
+            size=self.size.name
+        )
 
 def create_virtual_machine(name: str, size: VirtualMachineSize) -> VirtualMachine:
     """
@@ -140,7 +149,8 @@ def create_virtual_machine(name: str, size: VirtualMachineSize) -> VirtualMachin
             image_reference=dict(
                 publisher='Canonical',
                 offer='UbuntuServer',
-                sku='16.04.0-LTS',
+                # sku='16.04.0-LTS',
+                sku='18.04-LTS',
                 version='latest'
             )
         ),
@@ -157,6 +167,22 @@ def create_virtual_machine(name: str, size: VirtualMachineSize) -> VirtualMachin
         resource_group_name=f'{name}-rg',
         vm_name=name,
         parameters=vm_params
+    ).result()
+
+    compute_client.virtual_machine_extensions.create_or_update(
+        resource_group_name=f'{name}-rg',
+        vm_name=name,
+        vm_extension_name=f'{name}ext',
+        extension_parameters=dict(
+            location='eastus',
+            publisher='Microsoft.Azure.Extensions',
+            virtual_machine_extension_type='CustomScript',
+            type_handler_version='2.0',
+            settings=dict(
+                skipDos2Unix=True,
+                commandToExecute='while true; do date >> /tmp/hello.txt; sleep 5; done'
+            )
+        )
     )
 
     _insert_virtual_machine(name=name, size=size)
@@ -287,6 +313,61 @@ def _insert_virtual_machine(name: str, size: VirtualMachineSize) -> None:
         )
     '''
     params = (name, size.name)
+
+    cursor.execute(query, params)
+    db_connection.commit()
+
+    cursor.close()
+    db_connection.close()
+
+def _insert_virtual_machine_boot_event(
+        name: str,
+        unit: str,
+        message: str) -> None:
+    """
+    Insert a boot event for a VM.
+
+    Args:
+        name (str): Name of the VM.
+        unit (str): The unit name for the message.
+        message (str): The message of the event.
+
+    Returns:
+        None
+    """
+
+    db_name = os.environ['POSTGRES_DB_NAME']
+    username = os.environ['POSTGRES_USER_NAME']
+    hostname = os.environ['POSTGRES_HOST_NAME']
+    password = os.environ['POSTGRES_PASSWORD']
+    port = os.environ['POSTGRES_PORT']
+
+    # pylint: disable=line-too-long
+    db_connection = psycopg2.connect(f"dbname='{db_name}' user='{username}' host='{hostname}' password='{password}' port='{port}'")
+    cursor = db_connection.cursor()
+
+    query = '''
+        INSERT INTO public.virtual_machine_event
+        (
+            vm_id,
+            log_datetime,
+            unit,
+            message
+        )
+        SELECT
+            vm_id,
+            NOW() AT TIME ZONE 'utc',
+            %(unit)s,
+            %(message)s
+        FROM public.virtual_machine
+        WHERE
+            name = %(name)s;
+    '''
+    params = dict(
+        name=name,
+        unit=unit,
+        message=message
+    )
 
     cursor.execute(query, params)
     db_connection.commit()

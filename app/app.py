@@ -1,7 +1,14 @@
 """Management VM web app"""
 
-from flask import Flask, jsonify, abort
-from .virtual_machine import create_virtual_machine, VirtualMachineSize
+from flask import Flask, jsonify, abort, request
+from .virtual_machine import (
+    create_virtual_machine,
+    list_virtual_machines,
+    get_virtual_machine,
+    VirtualMachineSize,
+    _insert_virtual_machine,
+    _insert_virtual_machine_boot_event
+)
 
 # pylint: disable=invalid-name
 app = Flask(__name__)
@@ -12,32 +19,55 @@ def default_route():
 
     return jsonify(dict(application='vm-manage'))
 
+@app.route('/testscript/<message>', methods=['POST'])
+def test_script(message: str):
+    """Test the script extension"""
+
+    _insert_virtual_machine(name=f'test_{message}', size=VirtualMachineSize.MEDIUM)
+
 @app.route('/vm/<name>/<size>', methods=['POST'])
 def create_vm(name: str, size: str):
     """Create a VM"""
 
-    if size not in ['small', 'medium', 'large']:
-        abort(400, f'Size {size} does not exist')
+    possible_sizes = [vm_size.name.lower() for vm_size in VirtualMachineSize]
+
+    if size.lower() not in possible_sizes:
+        abort(400, f'Size {size} does not exist. Possible: {possible_sizes}')
 
     create_virtual_machine(
         name=name,
         size=VirtualMachineSize.SMALL
     )
 
-    return 'Creating VM!'
-
 @app.route('/vm/')
-@app.route('/vm/<int:vm_id>')
-def get_vm(vm_id: int = None):
+@app.route('/vm/<name>')
+def get_vm(name: str = None):
     """List all VMs or a single one"""
 
-    if vm_id is None:
-        return 'Get all VMs!'
+    if name is None:
+        return jsonify([
+            vm.to_dict()
+            for vm
+            in list_virtual_machines()
+        ])
 
-    return f'Getting VM {vm_id}!'
+    return jsonify(get_virtual_machine(name=name).to_dict())
 
-@app.route('/vm/<int:vm_id>/boot')
-def get_vm_boot(vm_id: int):
+@app.route('/vm/<name>/boot')
+def get_vm_boot(name: str):
     """Get VM boot events"""
 
-    return f'Getting boot events for VM {vm_id}!'
+    return f'Getting boot events for VM {name}!'
+
+@app.route('/vm/<name>/boot', methods=['POST'])
+def add_vm_boot_event(name: str):
+    """Add a boot event for the specified VM"""
+
+    event_data = request.get_json(force=True)
+
+    if 'UNIT' in event_data and 'MESSAGE' in event_data:
+        _insert_virtual_machine_boot_event(
+            name=name,
+            unit=event_data['UNIT'],
+            message=event_data['MESSAGE']
+        )
