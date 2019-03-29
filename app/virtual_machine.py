@@ -1,6 +1,6 @@
 """Virtual machine handler module"""
 
-from enum import Enum, auto
+from enum import Enum
 import os
 from typing import List, Dict, Any
 from azure.common.credentials import ServicePrincipalCredentials
@@ -12,9 +12,9 @@ import psycopg2
 class VirtualMachineSize(Enum):
     """Virtual machine size enum"""
 
-    SMALL = auto()
-    MEDIUM = auto()
-    LARGE = auto()
+    SMALL = 'Standard_DS1_v2'
+    MEDIUM = 'Standard_DS2_v2'
+    LARGE = 'Standard_DS3_v2'
 
 class VirtualMachine:
     """Virtual machine object"""
@@ -29,14 +29,7 @@ class VirtualMachine:
     def events(self, unit: str = None) -> List[Dict[str, Any]]:
         """List all events for this virtual machine"""
 
-        db_name = os.environ['POSTGRES_DB_NAME']
-        username = os.environ['POSTGRES_USER_NAME']
-        hostname = os.environ['POSTGRES_HOST_NAME']
-        password = os.environ['POSTGRES_PASSWORD']
-        port = os.environ['POSTGRES_PORT']
-
-        # pylint: disable=line-too-long
-        db_connection = psycopg2.connect(f"dbname='{db_name}' user='{username}' host='{hostname}' password='{password}' port='{port}'")
+        db_connection = psycopg2.connect(_postgresql_connection_string())
         cursor = db_connection.cursor()
 
         query = '''
@@ -78,6 +71,18 @@ class VirtualMachine:
             name=self.name,
             size=self.size.name
         )
+
+def _postgresql_connection_string():
+    """Generate the postgres connection string"""
+
+    db_name = os.environ['POSTGRES_DB_NAME']
+    username = os.environ['POSTGRES_USER_NAME']
+    hostname = os.environ['POSTGRES_HOST_NAME']
+    password = os.environ['POSTGRES_PASSWORD']
+    port = os.environ['POSTGRES_PORT']
+
+    # pylint: disable=line-too-long
+    return f"dbname='{db_name}' user='{username}' host='{hostname}' password='{password}' port='{port}'"
 
 def create_virtual_machine(name: str, size: VirtualMachineSize) -> VirtualMachine:
     """
@@ -181,13 +186,12 @@ def create_virtual_machine(name: str, size: VirtualMachineSize) -> VirtualMachin
             admin_password=f'{name}{os.environ["PASSWORD_SEED"]}'
         ),
         hardware_profile=dict(
-            vm_size='Standard_DS1_v2'
+            vm_size=size.value
         ),
         storage_profile=dict(
             image_reference=dict(
                 publisher='Canonical',
                 offer='UbuntuServer',
-                # sku='16.04.0-LTS',
                 sku='18.04-LTS',
                 version='latest'
             )
@@ -237,14 +241,7 @@ def list_virtual_machines() -> List[VirtualMachine]:
         List[VirtualMachine]: Environment virtual machines.
     """
 
-    db_name = os.environ['POSTGRES_DB_NAME']
-    username = os.environ['POSTGRES_USER_NAME']
-    hostname = os.environ['POSTGRES_HOST_NAME']
-    password = os.environ['POSTGRES_PASSWORD']
-    port = os.environ['POSTGRES_PORT']
-
-    # pylint: disable=line-too-long
-    db_connection = psycopg2.connect(f"dbname='{db_name}' user='{username}' host='{hostname}' password='{password}' port='{port}'")
+    db_connection = psycopg2.connect(_postgresql_connection_string())
     cursor = db_connection.cursor()
 
     query = '''
@@ -283,14 +280,7 @@ def get_virtual_machine(name: str) -> VirtualMachine:
         VirtualMachine: Requested virtual machine.
     """
 
-    db_name = os.environ['POSTGRES_DB_NAME']
-    username = os.environ['POSTGRES_USER_NAME']
-    hostname = os.environ['POSTGRES_HOST_NAME']
-    password = os.environ['POSTGRES_PASSWORD']
-    port = os.environ['POSTGRES_PORT']
-
-    # pylint: disable=line-too-long
-    db_connection = psycopg2.connect(f"dbname='{db_name}' user='{username}' host='{hostname}' password='{password}' port='{port}'")
+    db_connection = psycopg2.connect(_postgresql_connection_string())
     cursor = db_connection.cursor()
 
     query = '''
@@ -328,14 +318,7 @@ def _insert_virtual_machine(name: str, size: VirtualMachineSize) -> None:
         None
     """
 
-    db_name = os.environ['POSTGRES_DB_NAME']
-    username = os.environ['POSTGRES_USER_NAME']
-    hostname = os.environ['POSTGRES_HOST_NAME']
-    password = os.environ['POSTGRES_PASSWORD']
-    port = os.environ['POSTGRES_PORT']
-
-    # pylint: disable=line-too-long
-    db_connection = psycopg2.connect(f"dbname='{db_name}' user='{username}' host='{hostname}' password='{password}' port='{port}'")
+    db_connection = psycopg2.connect(_postgresql_connection_string())
     cursor = db_connection.cursor()
 
     query = '''
@@ -374,14 +357,7 @@ def _insert_virtual_machine_boot_event(
         None
     """
 
-    db_name = os.environ['POSTGRES_DB_NAME']
-    username = os.environ['POSTGRES_USER_NAME']
-    hostname = os.environ['POSTGRES_HOST_NAME']
-    password = os.environ['POSTGRES_PASSWORD']
-    port = os.environ['POSTGRES_PORT']
-
-    # pylint: disable=line-too-long
-    db_connection = psycopg2.connect(f"dbname='{db_name}' user='{username}' host='{hostname}' password='{password}' port='{port}'")
+    db_connection = psycopg2.connect(_postgresql_connection_string())
     cursor = db_connection.cursor()
 
     query = '''

@@ -30,7 +30,7 @@ def create_vm(name: str, size: str):
 
     create_virtual_machine(
         name=name,
-        size=VirtualMachineSize.SMALL
+        size=VirtualMachineSize[size.upper()]
     )
 
     return Response(status=200)
